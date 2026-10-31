@@ -1,13 +1,4 @@
-const photos = [
-  ['image/web/IMG_5187.jpg', 'Наш момент'],
-  ['image/web/IMG_6276.jpg', 'Вместе'],
-  ['image/2b7d2db1-08f7-4323-ae71-7f6480ff7613.JPG', 'Воспоминание'],
-  ['image/web/IMG_5671.jpg', 'Один из наших дней'],
-  ['image/693efb40-474b-4a3b-b7fa-bf94d4af6611.JPG', 'Рядом'],
-  ['image/web/IMG_5189.jpg', 'Наше время'],
-  ['image/web/IMG_6281.jpg', 'Счастье — это мы'],
-  ['image/6EC7C59D-2317-4080-A213-B8DD36004AB6.PNG', 'Навсегда в памяти']
-];
+const photos = window.bookPhotos;
 
 // Текст разложен на короткие книжные страницы, чтобы его было удобно читать с телефона.
 const pages = [
@@ -55,21 +46,42 @@ const pageAdditions = {
 };
 for (const [pageIndex, paragraph] of Object.entries(pageAdditions)) pages[Number(pageIndex)].paragraphs.push(paragraph);
 
+// Раскладываем остальные снимки на полноэкранные фотоальбомные страницы.
+const narrativePages = pages.slice(0, -1);
+const finalPage = pages[pages.length - 1];
+const unusedPhotos = photos.map((_, i) => i).filter(i => i >= 8);
+pages.length = 0;
+function addGalleryPage() {
+  const pagesLeft = Math.ceil(unusedPhotos.length / 6);
+  const count = Math.ceil(unusedPhotos.length / pagesLeft);
+  pages.push({ type: 'gallery', photos: unusedPhotos.splice(0, count) });
+}
+for (let i = 0; i < narrativePages.length; i += 2) {
+  pages.push(...narrativePages.slice(i, i + 2));
+  if (i >= 2 && unusedPhotos.length) addGalleryPage();
+}
+while (unusedPhotos.length) addGalleryPage();
+pages.push(finalPage);
+
 const book = document.querySelector('#book');
 function picture(index, full = false) {
-  const [src, caption] = photos[index % photos.length];
-  return `<figure class="page-photo ${full ? 'photo-full' : ''}"><img src="${src}" alt="${caption}" loading="lazy"></figure>`;
+  const [src, alt] = photos[index % photos.length];
+  return `<figure class="page-photo ${full ? 'photo-full' : ''}"><img data-src="${src}" alt="${alt}" loading="lazy"></figure>`;
 }
 function renderPage(page, i) {
   const number = String(i + 1).padStart(2, '0');
   const paragraphs = (page.paragraphs || []).map((p, n) => `<p${n === 0 ? ' class="first-paragraph"' : ''}>${p}</p>`).join('');
   let inner;
-  if (page.type === 'cover') inner = `<div class="cover-copy"><div class="eyebrow">книга о нас · история продолжается</div><h1>${page.title}</h1><p class="subtitle">${page.subtitle}</p><div class="cover-rule">✳ &nbsp; ♡ &nbsp; ✳</div></div>${picture(page.photo)}`;
+  if (page.type === 'gallery') inner = `<div class="gallery-grid">${page.photos.map(index => picture(index, true)).join('')}</div>`;
+  else if (page.type === 'cover') inner = `<div class="cover-copy"><div class="eyebrow">книга о нас · история продолжается</div><h1>${page.title}</h1><p class="subtitle">${page.subtitle}</p><div class="cover-rule">✳ &nbsp; ♡ &nbsp; ✳</div></div>${picture(page.photo)}`;
   else inner = `<div class="page-content"><div class="prose">${paragraphs}</div></div>${page.photo !== undefined ? picture(page.photo, page.layout === 'photo') : ''}`;
-  return `<article class="page ${page.type || ''} ${page.layout || ''}" data-title="${page.title}" style="z-index:${pages.length - i}">${inner}<span class="folio">${number}</span></article>`;
+  return `<article class="page ${page.type || ''} ${page.layout || ''}" style="z-index:${pages.length - i}">${inner}<span class="folio">${number}</span></article>`;
 }
 book.innerHTML = pages.map(renderPage).join('');
 const pageEls = [...document.querySelectorAll('.page')];
+function loadPagePhotos(page) {
+  page.querySelectorAll('img[data-src]').forEach(img => { img.src = img.dataset.src; img.removeAttribute('data-src'); });
+}
 let current = 0;
 let isTurning = false;
 function updateControls() {
@@ -84,6 +96,7 @@ function goTo(index) {
     pageEls.forEach(el => el.classList.remove('active', 'turning-next', 'turning-prev', 'returning', 'under-page', 'turned'));
     current = index;
     pageEls[current].classList.add('active');
+    loadPagePhotos(pageEls[current]);
     updateControls();
     return;
   }
@@ -94,6 +107,7 @@ function goTo(index) {
   if (forward) {
     const outgoing = pageEls[old];
     const incoming = pageEls[old + 1];
+    loadPagePhotos(incoming);
     outgoing.classList.remove('active');
     incoming.classList.add('active');
     incoming.classList.add('under-page');
@@ -112,6 +126,7 @@ function goTo(index) {
     setTimeout(() => { if (isTurning) finishForward(); }, 850);
   } else {
     const returning = pageEls[old - 1];
+    loadPagePhotos(returning);
     pageEls[old].classList.remove('active');
     returning.classList.add('active');
     pageEls[old].classList.add('under-page');
@@ -141,4 +156,5 @@ book.addEventListener('pointerup', e => { if (mouseX === null) return; const dx 
 document.addEventListener('keydown', e => { if (e.key === 'ArrowRight') goTo(current + 1); if (e.key === 'ArrowLeft') goTo(current - 1); });
 document.querySelector('.brand').addEventListener('click', e => { e.preventDefault(); goTo(0); });
 pageEls[0].classList.add('active');
+loadPagePhotos(pageEls[0]);
 updateControls();
