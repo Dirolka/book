@@ -1,160 +1,125 @@
-const photos = window.bookPhotos;
+const photos = window.memoryPhotos || [];
+const videos = window.memoryVideos || [];
+const photoGrid = document.querySelector('#photoGrid');
+const videoGrid = document.querySelector('#videoGrid');
+const memoryGrid = document.querySelector('#memoryGrid');
+const movesLabel = document.querySelector('#moves');
+const gameMessage = document.querySelector('#gameMessage');
+let firstCard = null;
+let locked = false;
+let moves = 0;
+let matched = 0;
+let round = 0;
+let hideTimer;
 
-// Текст разложен на короткие книжные страницы, чтобы его было удобно читать с телефона.
-const pages = [
-  { type: 'cover', title: 'Там, где начинается «мы»', subtitle: 'История о тебе, обо мне и обо всём, что стало нашим', photo: 0 },
-  { type: 'note', kicker: 'посвящается тебе', title: 'Моей любимой', paragraphs: ['Я хотел сохранить нашу историю не только в памяти. Вдруг однажды мы откроем эти страницы вместе и снова окажемся в тех днях — в первых сообщениях, долгих прогулках и объятиях, от которых не хотелось отрываться.', 'Эта книга — о том, как из маленьких случайностей выросло самое важное для меня.'] },
-  { chapter: 'Глава первая · первые сообщения', title: 'Сначала — просто TikTok', paragraphs: ['Мы начали общаться на расстоянии. Сначала между нами были тиктоки — короткие видео, которыми можно поделиться, даже если пока не знаешь, что сказать. Иногда мы переписывались, иногда каждый занимался своим. Всё шло легко и будто бы ни к чему не обязывало.', 'Тогда я ещё не мог представить, что буду так ждать твоего сообщения. Что однажды обычный день станет лучше просто потому, что в нём появилась ты.'], photo: 1 },
-  { title: 'Разговоры становились длиннее', paragraphs: ['Постепенно мы перебрались в мессенджеры. Сначала общались через раз, потом всё чаще. Одно сообщение тянуло за собой другое, и вот уже разговор не хотелось заканчивать.', 'Мне нравилось узнавать тебя понемногу: как ты думаешь, что тебя смешит, что ты рассказываешь о своём дне. Я ловил себя на том, что возвращаюсь к переписке снова и снова. Кажется, именно тогда я начал понимать, что попал.'], photo: 2 },
-  { title: 'Я уже был без ума от тебя', paragraphs: ['Я не сразу умел сказать это вслух. Зато внутри всё становилось понятнее: мне хотелось быть ближе, слышать тебя, делиться своим и знать, как прошёл твой день.', 'Даже на расстоянии ты постепенно стала частью моих будней. Я мог заниматься привычными делами, но где-то рядом с каждой мыслью всё равно была ты. Большая история началась с маленького «смотри, что нашёл».'], photo: 3 },
-  { chapter: 'Глава вторая · ближе', title: 'После смены — к тебе', paragraphs: ['Потом я стал приезжать к тебе после смены. Я уставал, но стоило увидеть тебя — и усталость уже не казалась такой важной. Весь день мог быть обычным, зато вечер рядом с тобой становился тем, чего я ждал.', 'Мне хотелось продлить каждую встречу. Не торопиться, не смотреть на часы, просто быть рядом ещё немного.'], photo: 4 },
-  { title: 'Дорога от Абзала', paragraphs: ['Мы возвращались от Абзала пешком. Не потому, что путь был главным, а потому, что его можно было пройти вместе. Мы держались за руки, шли рядом и говорили обо всём — или иногда просто молчали.', 'Я запомнил это чувство: твоя рука в моей, вечер вокруг и мысль, что сейчас мне больше ничего не нужно. Обычная дорога стала одной из моих самых любимых.'], photo: 5 },
-  { chapter: 'Глава третья · 25 февраля', title: 'Слова, которые я собирался сказать', paragraphs: ['Двадцать пятого февраля я признался тебе. До этого я успел переволноваться тысячу раз. Стеснялся, краснел, прокручивал в голове разные варианты — и ни один не казался достаточно хорошим.', 'А потом всё-таки сказал. Наверное, не идеально и не так уверенно, как хотелось. Но зато честно. Мне было важно, чтобы ты знала: ты для меня не просто человек, которому я отправляю сообщения. Ты — человек, о котором я думаю и по которому скучаю.'] },
-  { title: 'Наше «вместе»', paragraphs: ['После этого мы продолжили узнавать друг друга — уже ещё ближе. Мы гуляли, смеялись, могли поспорить и помириться. Были нежными, смешными, иногда упрямыми. Не каждый день был похож на открытку, и в этом тоже была наша настоящая жизнь.', 'Мне нравилось, что рядом с тобой можно быть собой. Не придумывать красивую версию себя, а просто делить с тобой хорошие моменты, неловкие паузы и всё, из чего складывается день.'], photo: 6 },
-  { chapter: 'Глава четвёртая · апрель', title: 'Когда ты приехала', paragraphs: ['В апреле ты приехала ко мне. Когда ты появилась, я так крепко тебя обнял. Мне казалось, что в этом объятии помещается вся моя тоска по тебе и вся радость от того, что сейчас ты здесь.', 'Я хотел запомнить каждую секунду: как ты выглядела, как звучал твой голос рядом, как менялось всё вокруг, когда мы наконец оказались вместе. Бывает, что одно объятие говорит точнее любых слов.'] , photo: 7 },
-  { title: 'Ты научила меня нежности', paragraphs: ['В тот апрель ты научила меня целоваться. Я волновался, смущался и одновременно хотел, чтобы этот момент длился подольше. С тобой близость была не чем-то отдельным от чувств — она была продолжением доверия, тепла и желания быть рядом.', 'Я вспоминаю не только первые поцелуи, но и то, как легко было улыбаться после. Как много можно сказать взглядом, прикосновением, тихим смехом. Ты открывала для меня новый мир бережно — и он становился нашим.'], photo: 0 },
-  { title: 'Наши вечера в подъезде', paragraphs: ['Я приходил к тебе, и мы могли просидеть в подъезде до поздней ночи. Нам всегда находилось о чём поговорить. А когда слова заканчивались, всё равно не хотелось вставать и расходиться.', 'Иногда родители уже начинали меня искать. Я понимал, что пора, но просил у вечера ещё несколько минут. Ещё один разговор. Ещё одну улыбку. Ещё немного рядом с тобой — прежде чем снова скучать.'], photo: 2 },
-  { chapter: 'Глава пятая · весна и лето', title: 'Март, смены и мысли о тебе', paragraphs: ['В марте я работал и думал о тебе. Среди дел и усталости я всё равно возвращался мыслями к нашим встречам. Скучал заранее и ждал следующего раза.', 'Мне нравилось знать, что где-то есть ты. Иногда этого уже хватало, чтобы день стал легче. А если удавалось увидеться — хотелось унести с собой каждый миг и хранить его до следующей встречи.'], photo: 3 },
-  { title: 'Майские планы', paragraphs: ['В мае я думал о каникулах и о том, что надо работать. И больше всего мне хотелось, чтобы работа оказалась рядом с тобой. Как же мне повезло, что я работал с тобой!', 'Я представлял, как мы проводим вместе не только редкие свободные часы: видимся на смене, а потом гуляем; едим, смеёмся, рассказываем друг другу всякие мелочи. Мне хотелось обычной жизни с тобой — такой, где рядом быть не событие, а наше любимое правило.'], photo: 4 },
-  { title: 'Кофейни и всё-всё-всё', paragraphs: ['Наши походы в кофейни, еда, прогулки, разговоры — я хотел бы разделить с тобой всё. Не только особенные даты, но и простые дни, в которых мы выбираем, куда пойти и что заказать.', 'Я представлял, как мы возвращаемся в любимое место, пробуем что-то новое и сидим дольше, чем собирались. Как фотографируем наши маленькие свидания, чтобы потом открыть снимки и вспомнить, как хорошо было просто быть вместе.'], photo: 5, layout: 'photo' },
-  { title: 'Ты красивая всегда', paragraphs: ['С макияжем или без — ты всегда красивая для меня. Я замечаю это каждый раз, даже если не всегда умею сказать так, чтобы не смутиться.', 'А цветы я однажды подарил как-то неуклюже. Я потом думал, что мог бы сделать лучше, красивее, правильнее. Но ведь главное было в том, что я хотел порадовать тебя. Мне повезло встретить тебя, и я не хочу принимать это как должное. Я ещё учусь быть тем парнем, который умеет показывать, как сильно любит.'], photo: 6 },
-  { chapter: 'Глава шестая · расстояние', title: 'Город между нами', paragraphs: ['Потом мне снова пришлось уехать в другой город на учёбу. Мне было грустно. Я так привык быть с тобой, что после встреч особенно остро замечал, как много между нами километров.', 'Я не хотел быть без тебя. Хотел остаться там, где можно увидеться, обнять тебя, пройтись вместе и не считать дни до следующей встречи. Расставание после близости всегда давалось тяжелее, чем я показывал.'], photo: 7 },
-  { title: 'И всё же мы рядом', paragraphs: ['Сейчас мы всё ещё на связи. Созваниваемся, смотрим что-то вместе, делимся новостями и просто проводим время каждый со своей стороны экрана. Это не заменяет встреч, но помогает чувствовать, что мы не потеряли друг друга.', 'Я жду звонков и наших совместных просмотров. Жду твоего голоса, твоих реакций, твоего смеха. Даже через экран ты умеешь сделать мой вечер теплее. А расстояние напоминает мне, насколько мне дорого то время, когда мы рядом.'], photo: 1 },
-  { type: 'end', kicker: 'последняя страница на сегодня', title: 'Продолжение следует', paragraphs: ['Это только начало нашей книги. Впереди ещё много страниц: новые встречи, дороги, любимые места, общие планы и дни, которые пока даже не случились.', 'Спасибо тебе за каждый разговор, за доверие, за смех и за объятия, в которых хочется остаться. Спасибо за то, что из обычных дней рядом с тобой получается моя любимая жизнь.', 'Я скучаю по тебе. Я очень рад, что однажды мы начали переписываться. И я хочу дальше — с тобой.'], photo: 0 }
-];
+function shuffle(items) {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
-// Дополнительные воспоминания продолжают рассказ, не превращаясь в заголовки.
-const pageAdditions = {
-  1: 'Когда я думаю о нас, мне важны не только большие события. Вспоминаются и совсем небольшие вещи: ожидание встречи, знакомый голос, чувство, что меня понимают. Из этих моментов и складывается то, что я так берегу.',
-  2: 'У каждого видео была своя маленькая причина: чем-то поделиться, вызвать улыбку, просто напомнить о себе. Тогда это казалось пустяком. Теперь я понимаю, что мы понемногу искали повод оставаться рядом, даже когда нас разделяло расстояние.',
-  3: 'Я мог перечитать переписку и улыбнуться сам себе. Иногда не требовалось никакого особенного повода: достаточно было увидеть твоё имя на экране. Наши разговоры становились местом, куда мне хотелось возвращаться после любого дня.',
-  4: 'Я начал замечать, как много места ты занимаешь в моих мыслях. Хотел рассказать тебе то, что случилось за день, и услышать, что происходило у тебя. Даже короткая переписка могла изменить моё настроение.',
-  5: 'Наверное, поэтому дорога после смены больше не казалась утомительной. Я знал, ради кого еду, и представлял нашу встречу. Рядом с тобой не нужно было придумывать особенный план: само это время уже было для меня подарком.',
-  6: 'Мы не пытались сделать прогулку особенной — она такой становилась сама. Шаг за шагом я привыкал к этой близости и всё яснее понимал, что хочу ещё много раз пройти с тобой знакомые улицы, держась за руку.',
-  7: 'Пока я собирался с духом, мне казалось, что сердце выдаёт меня раньше слов. Я боялся неловкости, но ещё больше боялся так и не сказать главного. Поэтому этот день остался для меня не просто датой, а началом новой главы нашей жизни.',
-  8: 'Мы не всегда совпадали во всём, но учились слышать друг друга. Мне дорого, что в нашей истории есть место и радости, и примирению, и простому желанию снова оказаться рядом. Так «мы» становилось настоящим.',
-  9: 'Встреча быстро стала воспоминанием, к которому я возвращался снова. Я хотел удержать это тепло в себе на потом — на дни, когда мы опять будем далеко. Иногда достаточно закрыть глаза и вспомнить, как ты оказалась у меня в объятиях.',
-  10: 'Я запоминал не только сам поцелуй, но и то, как мы смущались, улыбались и привыкали к новой близости. Мне хотелось быть внимательным к тебе и к каждому мгновению. С тобой даже волнение было частью чего-то очень тёплого.',
-  11: 'Теперь, когда вспоминаю те вечера, я вижу не подъезд, а наше маленькое убежище от спешки. Там не было ничего особенного — только мы, поздний час и разговоры, которые почему-то всегда могли продолжаться ещё немного.',
-  12: 'Работа занимала день, но не могла занять все мои мысли. Я ловил себя на том, что представляю следующую встречу и заранее радуюсь ей. Так ожидание тоже стало частью нашей истории: тихой, привычной и очень моей.',
-  13: 'Мне хотелось строить планы, в которых ты была бы не редким пунктом, а естественной частью каждого дня. Вместе работать, отдыхать после смены, выбирать, чем заняться, и смеяться над тем, что поймём только мы двое.',
-  14: 'Мне нравилось бывать с тобой в таких местах, где можно никуда не спешить. За чашкой кофе разговор сам находил дорогу: от серьёзного к смешному, от планов к случайным историям. Я хотел бы собирать такие дни один за другим.',
-  15: 'Я знаю, что красивый жест не всегда получается таким, каким его представляешь. Но за моей неловкостью всегда было простое желание: увидеть твою улыбку и напомнить, что ты для меня особенная. Я надеюсь, ты это чувствовала.',
-  16: 'Уезжая, я увозил с собой наши встречи и одновременно уже скучал по следующей. Новый город приносил свои дела, но в привычках оставалось место для тебя: написать, позвонить, рассказать, как прошёл день.',
-  17: 'Наши звонки помогают сделать расстояние чуть меньше. Я радуюсь, когда мы можем смотреть что-то одновременно и делиться реакциями, будто сидим рядом. После разговора я ещё долго помню твой голос и чувствую себя спокойнее.',
-  18: 'Я не знаю, какими будут все следующие страницы, и, наверное, в этом их красота. Пусть на них будут наши новые открытия, смешные истории и простые дни рядом. Главное, что я хочу писать эту историю вместе с тобой.'
-};
-for (const [pageIndex, paragraph] of Object.entries(pageAdditions)) pages[Number(pageIndex)].paragraphs.push(paragraph);
+function makeMemoryCard(photo, pairId) {
+  const button = document.createElement('button');
+  button.className = 'memory-card';
+  button.type = 'button';
+  button.dataset.pair = String(pairId);
+  button.setAttribute('aria-label', 'Открыть карточку');
+  button.innerHTML = '<span class="card-back" aria-hidden="true"><span>♡</span></span>';
+  const image = document.createElement('img');
+  image.src = photo.src;
+  image.alt = '';
+  image.loading = 'lazy';
+  button.append(image);
+  button.addEventListener('click', () => flipCard(button));
+  return button;
+}
 
-// Раскладываем остальные снимки на полноэкранные фотоальбомные страницы.
-const narrativePages = pages.slice(0, -1);
-const finalPage = pages[pages.length - 1];
-const unusedPhotos = photos.map((_, i) => i).filter(i => i >= 8);
-pages.length = 0;
-function addGalleryPage() {
-  const pagesLeft = Math.ceil(unusedPhotos.length / 6);
-  const count = Math.ceil(unusedPhotos.length / pagesLeft);
-  pages.push({ type: 'gallery', photos: unusedPhotos.splice(0, count) });
-}
-for (let i = 0; i < narrativePages.length; i += 2) {
-  pages.push(...narrativePages.slice(i, i + 2));
-  if (i >= 2 && unusedPhotos.length) addGalleryPage();
-}
-while (unusedPhotos.length) addGalleryPage();
-pages.push(finalPage);
-
-const book = document.querySelector('#book');
-function picture(index, full = false) {
-  const [src, alt] = photos[index % photos.length];
-  return `<figure class="page-photo ${full ? 'photo-full' : ''}"><img data-src="${src}" alt="${alt}" loading="lazy"></figure>`;
-}
-function renderPage(page, i) {
-  const number = String(i + 1).padStart(2, '0');
-  const paragraphs = (page.paragraphs || []).map((p, n) => `<p${n === 0 ? ' class="first-paragraph"' : ''}>${p}</p>`).join('');
-  let inner;
-  if (page.type === 'gallery') inner = `<div class="gallery-grid">${page.photos.map(index => picture(index, true)).join('')}</div>`;
-  else if (page.type === 'cover') inner = `<div class="cover-copy"><div class="eyebrow">книга о нас · история продолжается</div><h1>${page.title}</h1><p class="subtitle">${page.subtitle}</p><div class="cover-rule">✳ &nbsp; ♡ &nbsp; ✳</div></div>${picture(page.photo)}`;
-  else inner = `<div class="page-content"><div class="prose">${paragraphs}</div></div>${page.photo !== undefined ? picture(page.photo, page.layout === 'photo') : ''}`;
-  return `<article class="page ${page.type || ''} ${page.layout || ''}" style="z-index:${pages.length - i}">${inner}<span class="folio">${number}</span></article>`;
-}
-book.innerHTML = pages.map(renderPage).join('');
-const pageEls = [...document.querySelectorAll('.page')];
-function loadPagePhotos(page) {
-  page.querySelectorAll('img[data-src]').forEach(img => { img.src = img.dataset.src; img.removeAttribute('data-src'); });
-}
-let current = 0;
-let isTurning = false;
-function updateControls() {
-  document.querySelector('#pageCount').textContent = `${String(current + 1).padStart(2, '0')} / ${String(pageEls.length).padStart(2, '0')}`;
-  document.querySelector('#progressFill').style.width = `${((current + 1) / pageEls.length) * 100}%`;
-  document.querySelector('#prev').disabled = current === 0;
-  document.querySelector('#next').disabled = current === pageEls.length - 1;
-}
-function goTo(index) {
-  if (isTurning || index < 0 || index >= pageEls.length || index === current) return;
-  if (Math.abs(index - current) > 1) {
-    pageEls.forEach(el => el.classList.remove('active', 'turning-next', 'turning-prev', 'returning', 'under-page', 'turned'));
-    current = index;
-    pageEls[current].classList.add('active');
-    loadPagePhotos(pageEls[current]);
-    updateControls();
+function flipCard(card) {
+  if (locked || card === firstCard || card.classList.contains('is-open') || card.classList.contains('is-matched')) return;
+  card.classList.add('is-open');
+  card.setAttribute('aria-label', 'Фотография открыта');
+  if (!firstCard) {
+    firstCard = card;
     return;
   }
-  isTurning = true;
-  const old = current;
-  const next = index;
-  const forward = next > old;
-  if (forward) {
-    const outgoing = pageEls[old];
-    const incoming = pageEls[old + 1];
-    loadPagePhotos(incoming);
-    outgoing.classList.remove('active');
-    incoming.classList.add('active');
-    incoming.classList.add('under-page');
-    outgoing.classList.add('turning-next');
-    current = next;
-    updateControls();
-    const finishForward = event => {
-      if (event && event.propertyName !== 'transform') return;
-      outgoing.classList.remove('turning-next'); outgoing.classList.add('turned');
-      incoming.classList.remove('under-page');
-      isTurning = false;
-      outgoing.removeEventListener('transitionend', finishForward);
-    };
-    outgoing.addEventListener('transitionend', finishForward);
-    // Non-animated environments still finish the navigation.
-    setTimeout(() => { if (isTurning) finishForward(); }, 850);
-  } else {
-    const returning = pageEls[old - 1];
-    loadPagePhotos(returning);
-    pageEls[old].classList.remove('active');
-    returning.classList.add('active');
-    pageEls[old].classList.add('under-page');
-    returning.classList.add('turning-prev');
-    current = next;
-    updateControls();
-    requestAnimationFrame(() => requestAnimationFrame(() => returning.classList.add('returning')));
-    const finishBack = event => {
-      if (event && event.propertyName !== 'transform') return;
-      returning.classList.remove('turning-prev', 'returning', 'turned');
-      pageEls[old].classList.remove('under-page');
-      isTurning = false;
-      returning.removeEventListener('transitionend', finishBack);
-    };
-    returning.addEventListener('transitionend', finishBack);
-    setTimeout(() => { if (isTurning) finishBack(); }, 850);
+
+  moves += 1;
+  movesLabel.textContent = `Ходы: ${moves}`;
+  if (card.dataset.pair === firstCard.dataset.pair) {
+    card.classList.add('is-matched');
+    firstCard.classList.add('is-matched');
+    card.setAttribute('aria-label', 'Пара найдена');
+    firstCard.setAttribute('aria-label', 'Пара найдена');
+    firstCard = null;
+    matched += 1;
+    if (matched === Math.min(6, photos.length)) {
+      gameMessage.textContent = `Все пары найдены за ${moves} ${moves === 1 ? 'ход' : moves < 5 ? 'хода' : 'ходов'}. Надеюсь, игра подарила тебе улыбку.`;
+    } else {
+      gameMessage.textContent = 'Есть пара! Попробуй найти следующую.';
+    }
+    return;
   }
+
+  locked = true;
+  gameMessage.textContent = 'Не совпали — попробуй ещё раз.';
+  const activeRound = round;
+  const previous = firstCard;
+  firstCard = null;
+  hideTimer = window.setTimeout(() => {
+    if (activeRound !== round) return;
+    previous.classList.remove('is-open');
+    card.classList.remove('is-open');
+    previous.setAttribute('aria-label', 'Открыть карточку');
+    card.setAttribute('aria-label', 'Открыть карточку');
+    locked = false;
+    gameMessage.textContent = 'Все карточки закрыты. Выбирай любые две.';
+  }, 850);
 }
-document.querySelector('#prev').addEventListener('click', () => goTo(current - 1));
-document.querySelector('#next').addEventListener('click', () => goTo(current + 1));
-let startX = null, startY = null;
-book.addEventListener('touchstart', e => { startX = e.changedTouches[0].clientX; startY = e.changedTouches[0].clientY; }, { passive: true });
-book.addEventListener('touchend', e => { if (startX === null) return; const dx = e.changedTouches[0].clientX - startX; const dy = e.changedTouches[0].clientY - startY; if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy) * 1.2) goTo(current + (dx < 0 ? 1 : -1)); startX = null; }, { passive: true });
-let mouseX = null;
-book.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') mouseX = e.clientX; });
-book.addEventListener('pointerup', e => { if (mouseX === null) return; const dx = e.clientX - mouseX; if (Math.abs(dx) > 60) goTo(current + (dx < 0 ? 1 : -1)); mouseX = null; });
-document.addEventListener('keydown', e => { if (e.key === 'ArrowRight') goTo(current + 1); if (e.key === 'ArrowLeft') goTo(current - 1); });
-document.querySelector('.brand').addEventListener('click', e => { e.preventDefault(); goTo(0); });
-pageEls[0].classList.add('active');
-loadPagePhotos(pageEls[0]);
-updateControls();
+
+function resetGame() {
+  round += 1;
+  window.clearTimeout(hideTimer);
+  firstCard = null;
+  locked = false;
+  moves = 0;
+  matched = 0;
+  movesLabel.textContent = 'Ходы: 0';
+  gameMessage.textContent = 'Все карточки закрыты. Выбирай любые две.';
+  const pairs = photos.slice(0, 6).flatMap((photo, index) => [
+    { photo, pairId: index },
+    { photo, pairId: index }
+  ]);
+  memoryGrid.replaceChildren(...shuffle(pairs).map(({ photo, pairId }) => makeMemoryCard(photo, pairId)));
+}
+
+photos.forEach((photo, index) => {
+  const figure = document.createElement('figure');
+  figure.className = `photo-tile photo-tile-${index + 1}`;
+  const image = document.createElement('img');
+  image.src = photo.src;
+  image.alt = photo.alt;
+  image.loading = 'lazy';
+  figure.append(image);
+  photoGrid.append(figure);
+});
+
+videos.forEach((src, index) => {
+  const video = document.createElement('video');
+  video.className = 'memory-video';
+  video.controls = true;
+  video.preload = 'metadata';
+  video.playsInline = true;
+  video.poster = photos[(index + 3) % photos.length]?.src || '';
+  video.setAttribute('aria-label', `Наше видео, воспоминание ${index + 1}`);
+  const source = document.createElement('source');
+  source.src = src;
+  source.type = 'video/mp4';
+  video.append(source);
+  videoGrid.append(video);
+});
+
+document.querySelector('#resetGame').addEventListener('click', resetGame);
+resetGame();

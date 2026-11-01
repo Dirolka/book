@@ -1,24 +1,74 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#eee5d9"><meta name="description" content="Наша история — книга о любви, расстоянии и встречах">
-  <title>Там, где начинается «мы»</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f2ed">
+  <meta name="description" content="Несколько искренних слов и наши общие воспоминания.">
+  <title>Прости меня</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
-  <main class="app">
-    <header class="topbar"><a class="brand" href="#" aria-label="На обложку"><span class="brand-mark">♡</span><span>наша книга</span></a></header>
-    <section class="book-shell" aria-label="Интерактивная книга">
-      <div class="book-edge" aria-hidden="true"></div>
-      <div class="book" id="book" aria-live="polite"></div>
+  <header class="topbar"><a class="wordmark" href="#top" aria-label="В начало"><span>♡</span> от меня — тебе</a><a class="top-link" href="#memories">наши моменты <span aria-hidden="true">↘</span></a></header>
+  <main id="top">
+    <section class="hero" aria-labelledby="headline">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> несколько важных слов</p>
+        <h1 id="headline">Прости<br><em>меня.</em></h1>
+        <a class="scroll-link" href="#letter"><span class="scroll-icon">↓</span> прочитать письмо</a>
+      </div>
+      <div class="hero-image-wrap">
+        <div class="hero-image-frame"><img id="heroPhoto" src="image/web/IMG_5187.jpg" alt="Одно из наших общих воспоминаний"></div>
+        <div class="image-caption"><span class="caption-line"></span> один из наших моментов</div>
+        <span class="hero-stamp" aria-hidden="true">с теплом<br>♡</span>
+      </div>
+      <div class="hero-index">01 <span>—</span> 03</div>
     </section>
-    <nav class="controls" aria-label="Листание книги"><button class="nav-button" id="prev" aria-label="Предыдущая страница">←</button><div class="progress"><span class="page-count" id="pageCount">01 / 27</span><div class="progress-track"><span id="progressFill"></span></div><span class="swipe-hint" id="swipeHint">листай пальцем <span>↔</span></span></div><button class="nav-button next" id="next" aria-label="Следующая страница">→</button></nav>
-    <footer class="footnote">бережно храним наше «мы» <span>✳</span></footer>
+
+    <section class="letter-section" id="letter" aria-labelledby="letterTitle">
+      <div class="section-side"><span class="section-number">01 / письмо</span><span class="side-rule"></span><span class="side-note">от сердца</span></div>
+      <article class="letter-card">
+        <p class="letter-kicker">тебе</p>
+        <h2 id="letterTitle">Я был не прав.</h2>
+        <div class="letter-body">
+          <p>Прости меня за вчерашнее. Я поступил неправильно и понимаю, что мог причинить тебе боль. Я не хочу искать оправдания — мне важно признать свою ответственность.</p>
+          <p>Ты очень важна для меня, и мне хочется беречь то хорошее, что есть между нами. Но я не хочу давить на тебя: ты вправе чувствовать то, что чувствуешь, и взять столько времени, сколько тебе нужно.</p>
+          <p>Прости меня что я не приехал за все это время, на дорогу мне похуй хоть гололед, мне все равно. Я самого утра искал просил у кого то, но ни кто не дал, собирался выйти курьером выйти что бы найти хотя бы дорогу к тебе. Не смог. Начал делать игру про тебя, не вышло, точнее вышло но хуево. Никогда не делал игры.</p>
+          <p>Да опять сайт. Прости. Все что я пока могу для тебя сделать это вот это. У меня больше нет кроме тебя. Сегодня рд позвнили и начали ругать что я не приехал сегодня к ним. Не поздравил дяду, не попрощался с ними. Из за этого отругали</p>
+          <p>Но они мне сейчас не важны. У меня в первых задач стоишь ты. Ты мое счастье. Ты мое будущие. Я люблю тебя</p>
+        </div>
+        <p class="signature">С теплом, <span>я</span></p>
+        <div class="letter-flower" aria-hidden="true">✳</div>
+      </article>
+      <p class="letter-footnote">Тебе не нужно отвечать сразу.</p>
+    </section>
+
+    <section class="game-section" id="game" aria-labelledby="gameTitle">
+      <div class="section-heading">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> маленькая игра</p>
+        <h2 id="gameTitle">Найди пару</h2>
+        <p>Открой две карточки и попробуй найти одинаковые фотографии. Просто маленькая пауза с нашими моментами.</p>
+      </div>
+      <div class="game-status"><span id="moves">Ходы: 0</span><button class="reset-button" id="resetGame" type="button">Начать заново <span aria-hidden="true">↻</span></button></div>
+      <div class="memory-grid" id="memoryGrid" aria-label="Игра найди пару"></div>
+      <p class="game-message" id="gameMessage" aria-live="polite">Все карточки закрыты. Выбирай любые две.</p>
+    </section>
+
+    <section class="memories-section" id="memories" aria-labelledby="memoriesTitle">
+      <div class="memories-head">
+        <div><p class="eyebrow"><span class="eyebrow-dot"></span> то, что я берегу</p><h2 id="memoriesTitle">Наши моменты</h2></div>
+        <p>Несколько фотографий и видео, которые напоминают мне о хорошем.</p>
+      </div>
+      <div class="photo-grid" id="photoGrid"></div>
+      <div class="video-heading"><span class="section-number">движущиеся воспоминания</span><span class="side-rule"></span></div>
+      <div class="video-grid" id="videoGrid"></div>
+    </section>
   </main>
-  <script src="photos.js"></script><script src="app.js"></script>
+  <footer class="footer"><span class="footer-heart">♡</span><span>Я помню хорошее и хочу быть бережнее.</span><a href="#top">наверх ↑</a></footer>
+  <script src="photos.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
